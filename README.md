@@ -1,9 +1,27 @@
-# 通讯录后端系统 (Address Book Backend)
+# 通讯录管理系统 (Address Book)
 
-## 一、 项目运行说明
-本项目基于 Python Flask 框架 + SQLite 数据库开发。
+**🌟 线上访问地址：http://101.201.112.78** （部署在阿里云服务器的完整运行环境）
 
-### 1. 安装依赖
-在项目根目录打开命令行，运行：
-```bash
-pip install -r requirements.txt
+## 一、 项目简介
+本项目是软件工程极限编程（Extreme Programming）课程作业，实现了一个基于 Web 的通讯录管理系统。系统支持联系人的增删改查、多联系方式记录、收藏重要联系人，以及 Excel 文件的导入导出功能。
+
+## 二、 目录结构
+- `frontend/`：前端页面代码（原生 HTML + CSS + JS）
+- `backend/`：后端服务代码（Python Flask + SQLite）
+- `README.md`：项目说明文档
+
+## 三、 本地运行说明
+
+### 1. 启动后端服务
+1. 进入后端目录：`cd backend`
+2. 安装依赖库：`pip install -r requirements.txt`
+3. 启动服务：`python app.py`
+*(服务默认运行在 http://127.0.0.1:5000)*
+
+### 2. 运行前端页面
+直接用浏览器打开 `frontend/index.html` 即可，前端会通过 AJAX 请求本地 `5000` 端口的接口。
+
+## 四、 团队分工
+
+- **[郑妍]**：后端开发（数据库设计、API 接口实现、Excel 导入导出逻辑、云端服务器部署）及后端文档撰写。
+- **[莫思琪]**：前端开发（三个页面的排版、样式设计、交互逻辑与接口联调测试）及博客统筹。
