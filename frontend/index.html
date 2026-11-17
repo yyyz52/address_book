@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的通讯录</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+        .container { max-width: 800px; background: white; padding: 20px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .top-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .btn { padding: 8px 15px; background: #007bff; color: white; text-decoration: none; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-green { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        .contact-card { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .methods { font-size: 0.9em; color: #666; margin-top: 5px; }
+        .star { cursor: pointer; font-size: 20px; color: #ccc; }
+        .star.active { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📇 我的通讯录</h2>
+        
+        <div class="top-bar">
+            <a href="add.html" class="btn btn-green">+ 添加联系人</a>
+            <div>
+                <!-- 导出Excel就是一个普通的超链接 -->
+                <a href="http://127.0.0.1:5000/export" class="btn" style="background: #17a2b8;">导出 Excel</a>
+                
+                <!-- 导入Excel需要用到文件上传 -->
+                <input type="file" id="excelFile" style="display: none;" onchange="uploadExcel()">
+                <button class="btn" style="background: #6f42c1;" onclick="document.getElementById('excelFile').click()">导入 Excel</button>
+            </div>
+        </div>
+
+        <div id="contactList">
+            <!-- 联系人列表会通过下面的 JS 代码填充到这里 -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+
+        // 1. 页面打开时，获取并显示列表
+        function loadContacts() {
+            fetch(`${API_BASE}/contacts`)
+                .then(res => res.json())
+                .then(data => {
+                    const listDiv = document.getElementById('contactList');
+                    listDiv.innerHTML = ''; // 清空
+                    
+                    if(data.length === 0) {
+                        listDiv.innerHTML = '<p style="text-align:center; color:#999;">通讯录为空，快去添加吧！</p>';
+                        return;
+                    }
+
+                    data.forEach(contact => {
+                        let methodsHtml = '';
+                        contact.methods.forEach(m => {
+                            methodsHtml += `<span style="margin-right: 10px;">[${m.type}] ${m.value}</span>`;
+                        });
+
+                        const card = document.createElement('div');
+                        card.className = 'contact-card';
+                        card.innerHTML = `
+                            <div>
+                                <strong>${contact.name}</strong>
+                                <div class="methods">${methodsHtml}</div>
+                            </div>
+                            <div>
+                                <span class="star ${contact.is_favorite ? 'active' : ''}" onclick="toggleFav(${contact.id})">★</span>
+                                <button class="btn btn-danger" onclick="deleteContact(${contact.id})" style="padding: 4px 8px; font-size: 12px;">删除</button>
+                            </div>
+                        `;
+                        listDiv.appendChild(card);
+                    });
+                });
+        }
+
+        // 2. 切换收藏
+        function toggleFav(id) {
+            fetch(`${API_BASE}/contacts/${id}/favorite`, { method: 'POST' })
+                .then(() => loadContacts());
+        }
+
+        // 3. 删除联系人
+        function deleteContact(id) {
+            if(confirm('确定要删除吗？')) {
+                fetch(`${API_BASE}/contacts/${id}`, { method: 'DELETE' })
+                    .then(() => loadContacts());
+            }
+        }
+
+        // 4. 导入 Excel
+        function uploadExcel() {
+            const fileInput = document.getElementById('excelFile');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch(`${API_BASE}/import`, {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json())
+              .then(data => {
+                  if(data.error) {
+                      alert('导入失败: ' + data.error);
+                  } else {
+                      alert('导入成功！');
+                      loadContacts();
+                  }
+                  fileInput.value = ''; 
+              });
+        }
+
+        loadContacts();
+    </script>
+</body>
+</html>
