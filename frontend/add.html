@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>添加联系人</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; }
+        .container { max-width: 500px; background: white; padding: 20px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { padding: 10px 15px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; }
+        .method-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>➕ 添加联系人</h2>
+        
+        <div class="form-group">
+            <label>姓名 *</label>
+            <input type="text" id="name" placeholder="输入姓名">
+        </div>
+
+        <div class="form-group">
+            <label>联系方式（可添加多个）</label>
+            <div id="methodsContainer">
+                <div class="method-row">
+                    <select class="m-type">
+                        <option value="phone">手机</option>
+                        <option value="email">邮箱</option>
+                        <option value="wechat">微信</option>
+                    </select>
+                    <input type="text" class="m-value" placeholder="输入具体内容">
+                </div>
+            </div>
+            <button type="button" onclick="addMethodInput()" style="background:none; border:none; color:#007bff; cursor:pointer;">+ 增加一行联系方式</button>
+        </div>
+
+        <button class="btn" onclick="submitContact()">保存联系人</button>
+        <a href="index.html" style="display:block; text-align:center; margin-top:15px; color:#666; text-decoration:none;">返回列表</a>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+
+        function addMethodInput() {
+            const container = document.getElementById('methodsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'method-row';
+            newRow.innerHTML = `
+                <select class="m-type">
+                    <option value="phone">手机</option>
+                    <option value="email">邮箱</option>
+                    <option value="wechat">微信</option>
+                </select>
+                <input type="text" class="m-value" placeholder="输入具体内容">
+            `;
+            container.appendChild(newRow);
+        }
+
+        function submitContact() {
+            const name = document.getElementById('name').value;
+            if(!name) return alert('姓名不能为空');
+
+            const methods = [];
+            const typeSelects = document.querySelectorAll('.m-type');
+            const valueInputs = document.querySelectorAll('.m-value');
+
+            for(let i=0; i<typeSelects.length; i++) {
+                if(valueInputs[i].value.trim() !== '') {
+                    methods.push({
+                        type: typeSelects[i].value,
+                        value: valueInputs[i].value
+                    });
+                }
+            }
+
+            const data = { name: name, methods: methods };
+
+            fetch(`${API_BASE}/contacts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => {
+                if(res.ok) {
+                    alert('添加成功！');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('添加失败');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
